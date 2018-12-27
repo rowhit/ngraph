@@ -18,8 +18,8 @@
 
 #include <string>
 
-#include "core/attribute.hpp"
-#include "core/node.hpp"
+#include "ngraph/frontend/onnx_import/core/attribute.hpp"
+#include "ngraph/frontend/onnx_import/core/node.hpp"
 #include "ngraph/coordinate_diff.hpp"
 #include "ngraph/op/avg_pool.hpp"
 #include "ngraph/shape.hpp"

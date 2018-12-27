@@ -29,6 +29,8 @@ namespace ngraph
         class Graph;
         class Model;
 
+        using AttributeProto_AttributeType = decltype(onnx::AttributeProto{}.type());
+
         namespace error
         {
             namespace attribute
@@ -37,7 +39,7 @@ namespace ngraph
                 {
                     struct Attribute : ngraph_error
                     {
-                        Attribute(const std::string& msg, onnx::AttributeProto_AttributeType type)
+                        Attribute(const std::string& msg, AttributeProto_AttributeType type)
                             : ngraph_error{msg + ": " +
                                            onnx::AttributeProto_AttributeType_Name(type)}
                         {
@@ -48,7 +50,7 @@ namespace ngraph
 
                 struct InvalidData : detail::Attribute
                 {
-                    explicit InvalidData(onnx::AttributeProto_AttributeType type)
+                    explicit InvalidData(AttributeProto_AttributeType type)
                         : Attribute{"invalid attribute type", type}
                     {
                     }
@@ -56,7 +58,7 @@ namespace ngraph
 
                 struct UnsupportedType : detail::Attribute
                 {
-                    explicit UnsupportedType(onnx::AttributeProto_AttributeType type)
+                    explicit UnsupportedType(AttributeProto_AttributeType type)
                         : Attribute{"unsupported attribute type", type}
                     {
                     }

@@ -22,7 +22,7 @@ include(ExternalProject)
 #------------------------------------------------------------------------------
 
 set(PROTOBUF_GIT_REPO_URL https://github.com/google/protobuf.git)
-set(PROTOBUF_GIT_BRANCH origin/3.5.x)
+set(PROTOBUF_GIT_BRANCH "48cb18e5c419ddd23d9badcfe4e9df7bde1979b2")
 
 # The 'BUILD_BYPRODUCTS' arguments was introduced in CMake 3.2.
 if (${CMAKE_VERSION} VERSION_LESS 3.2)

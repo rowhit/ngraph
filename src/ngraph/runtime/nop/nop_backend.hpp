@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "ngraph/runtime/backend.hpp"
+#include "ngraph/runtime/executor.hpp"
 #include "ngraph/runtime/host_tensor.hpp"
 #include "ngraph/runtime/tensor.hpp"
 
@@ -46,14 +47,11 @@ public:
 
     Handle compile(std::shared_ptr<Function> function,
                    bool enable_performance_collection = false) override;
+};
 
+class ngraph::runtime::nop::NOPExecutor : public Executor
+{
     bool execute(Handle handle,
                  const std::vector<runtime::Tensor*>& outputs,
                  const std::vector<runtime::Tensor*>& inputs) override;
-
-private:
-    class FunctionInstance
-    {
-    };
-    std::vector<std::shared_ptr<FunctionInstance>> m_instances;
-};
+}

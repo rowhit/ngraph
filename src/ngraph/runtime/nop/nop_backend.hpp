@@ -33,6 +33,7 @@ namespace ngraph
         namespace nop
         {
             class NOPBackend;
+            class NOPExecutor;
         }
     }
 }
@@ -51,7 +52,10 @@ public:
 
 class ngraph::runtime::nop::NOPExecutor : public Executor
 {
-    bool execute(Handle handle,
-                 const std::vector<runtime::Tensor*>& outputs,
+public:
+    bool execute(const std::vector<runtime::Tensor*>& outputs,
                  const std::vector<runtime::Tensor*>& inputs) override;
+
+private:
+    NOPExecutor();
 }

@@ -57,18 +57,21 @@ shared_ptr<runtime::Tensor> runtime::nop::NOPBackend::create_tensor(const elemen
 runtime::Handle runtime::nop::NOPBackend::compile(shared_ptr<Function> function,
                                                   bool enable_performance_collection)
 {
+    unique_ptr<NOPExecutor> exec{new NOPExecutor(this, function, enable_performance_collection)};
+
+    return exec;
+}
+
+runtime::nop::NOPExecutor::NOPExecutor(Backend* backend,
+                                       shared_ptr<Function> function,
+                                       bool enable_performance_collection)
+    : Executor(backend)
+{
     pass::Manager pass_manager;
     pass_manager.register_pass<pass::AssignLayout<DenseTensorLayout>>();
     pass_manager.run_passes(function);
 
     set_parameters_and_results(*function);
-
-    // Return some non-null value. The actual value is unused.
-    return handle;
-}
-
-runtime::nop::NOPExecutor()
-{
 }
 
 bool runtime::nop::NOPExecutor::execute(const vector<runtime::Tensor*>& outputs,

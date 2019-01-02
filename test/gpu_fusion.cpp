@@ -413,7 +413,7 @@ TEST(gpu_fusion, fuse_2_layer_rnn_1lstm_analytic)
         backend->create_tensor(element::f32, ct->get_shape());
 
     auto handle = backend->compile(f);
-    backend->call_with_validate(handle, {result_ht, result_ct}, arg_tensors);
+    handle->call_with_validate({result_ht, result_ct}, arg_tensors);
     //EXPECT_EQ(1, count_ops_of_type<op::gpu::Rnn>(f));
 
     auto sig = [](float x) { return 1.0f / (1.0f + std::exp(-x)); };

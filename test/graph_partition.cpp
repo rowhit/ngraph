@@ -35,6 +35,34 @@
 using namespace std;
 using namespace ngraph;
 
+TEST(graph_partition, placement_all_cpu_policy)
+{
+    Shape shape = Shape{2, 2};
+    shared_ptr<op::Parameter> A = make_shared<op::Parameter>(element::f32, shape);
+    shared_ptr<op::Parameter> B = make_shared<op::Parameter>(element::f32, shape);
+    shared_ptr<op::Parameter> C = make_shared<op::Parameter>(element::f32, shape);
+    shared_ptr<Node> AplusB = A + B;
+    shared_ptr<Node> AplusBtimesC = AplusB * C;
+    shared_ptr<Function> f = make_shared<Function>(AplusBtimesC, ParameterVector{A, B, C});
+
+    for (auto node : f->get_ordered_ops())
+    {
+        EXPECT_EQ(node->get_placement(), Placement::DEFAULT);
+    }
+
+    pass::Manager pass_manager;
+    pass_manager.register_pass<pass::AssignPlacement>(
+        [](shared_ptr<Node> node) { return Placement::CPU; });
+    pass_manager.run_passes(f);
+
+    for (auto node : f->get_ordered_ops())
+    {
+        EXPECT_EQ(node->get_placement(), Placement::CPU);
+    }
+}
+
+#ifdef NGRAPH_CPU_ENABLE
+
 // Perform all operations on INTERPRETER and fallback Multiply to CPU
 static function<Placement(shared_ptr<Node>)> int_with_cpu_mul_policy = [](shared_ptr<Node> node) {
     Placement placement;
@@ -194,33 +222,6 @@ protected:
     std::vector<std::shared_ptr<FunctionInstance>> m_instances;
 };
 
-TEST(graph_partition, placement_all_cpu_policy)
-{
-    Shape shape = Shape{2, 2};
-    shared_ptr<op::Parameter> A = make_shared<op::Parameter>(element::f32, shape);
-    shared_ptr<op::Parameter> B = make_shared<op::Parameter>(element::f32, shape);
-    shared_ptr<op::Parameter> C = make_shared<op::Parameter>(element::f32, shape);
-    shared_ptr<Node> AplusB = A + B;
-    shared_ptr<Node> AplusBtimesC = AplusB * C;
-    shared_ptr<Function> f = make_shared<Function>(AplusBtimesC, ParameterVector{A, B, C});
-
-    for (auto node : f->get_ordered_ops())
-    {
-        EXPECT_EQ(node->get_placement(), Placement::DEFAULT);
-    }
-
-    pass::Manager pass_manager;
-    pass_manager.register_pass<pass::AssignPlacement>(
-        [](shared_ptr<Node> node) { return Placement::CPU; });
-    pass_manager.run_passes(f);
-
-    for (auto node : f->get_ordered_ops())
-    {
-        EXPECT_EQ(node->get_placement(), Placement::CPU);
-    }
-}
-
-#ifdef NGRAPH_CPU_ENABLE
 TEST(graph_partition, placement_int_with_cpu_mul_policy)
 {
     Shape shape = Shape{2, 2};
@@ -379,7 +380,7 @@ TEST(graph_partition, hybrid_abc)
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
     auto handle = backend->compile(f);
-    backend->call_with_validate(handle, {r}, {a, b, c});
+    handle->call_with_validate({r}, {a, b, c});
     EXPECT_EQ(read_vector<float>(r),
               (test::NDArray<float, 2>({{54, 80}, {110, 144}})).get_vector());
 }
@@ -418,7 +419,7 @@ TEST(graph_partition, hybrid_abcd)
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
     copy_data(d, test::NDArray<float, 2>({{13, 14}, {15, 16}}).get_vector());
 
-    backend->call_with_validate(handle, {r}, {a, b, c, d});
+    handle->call_with_validate({r}, {a, b, c, d});
     EXPECT_EQ(read_vector<float>(r), (test::NDArray<float, 2>({{32, 48}, {68, 92}})).get_vector());
 }
 
@@ -452,7 +453,7 @@ TEST(graph_partition, hybrid_back_and_forth)
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-    backend->call_with_validate(handle, {r}, {a, b, c});
+    handle->call_with_validate({r}, {a, b, c});
     EXPECT_EQ(read_vector<float>(r),
               (test::NDArray<float, 2>({{90, 180}, {308, 480}})).get_vector());
 }
@@ -489,7 +490,7 @@ TEST(graph_partition, hybrid_multi_middle_nodes)
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
     copy_data(c, test::NDArray<float, 2>({{9, 10}, {11, 12}}).get_vector());
 
-    backend->call_with_validate(handle, {r}, {a, b, c});
+    handle->call_with_validate({r}, {a, b, c});
     EXPECT_EQ(read_vector<float>(r),
               (test::NDArray<float, 2>({{210, 288}, {378, 480}})).get_vector());
 }
@@ -515,7 +516,7 @@ TEST(graph_partition, hybrid_no_split)
     copy_data(a, test::NDArray<float, 2>({{1, 2}, {3, 4}}).get_vector());
     copy_data(b, test::NDArray<float, 2>({{5, 6}, {7, 8}}).get_vector());
 
-    backend->call_with_validate(handle, {c}, {a, b});
+    handle->call_with_validate({c}, {a, b});
     EXPECT_EQ(read_vector<float>(c), (test::NDArray<float, 2>({{6, 8}, {10, 12}})).get_vector());
 }
 

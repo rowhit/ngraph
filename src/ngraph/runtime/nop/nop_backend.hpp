@@ -52,10 +52,14 @@ public:
 
 class ngraph::runtime::nop::NOPExecutor : public Executor
 {
+    friend class NOPBackend;
+
 public:
     bool execute(const std::vector<runtime::Tensor*>& outputs,
                  const std::vector<runtime::Tensor*>& inputs) override;
 
 private:
-    NOPExecutor();
-}
+    NOPExecutor(Backend* backend,
+                std::shared_ptr<Function> function,
+                bool enable_performance_collection);
+};

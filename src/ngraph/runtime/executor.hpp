@@ -37,7 +37,7 @@ namespace ngraph
 class ngraph::runtime::Executor
 {
 public:
-    Executor();
+    Executor(runtime::Backend* backend);
     virtual ~Executor();
 
     /// \deprecated use execute method
@@ -92,7 +92,10 @@ protected:
     /// \param func The function with Results fully resolved.
     void set_parameters_and_results(const Function& func);
 
+    runtime::Backend* get_backend();
+
 private:
     ngraph::ParameterVector m_parameters;
     ngraph::ResultVector m_results;
+    runtime::Backend* m_backend;
 };

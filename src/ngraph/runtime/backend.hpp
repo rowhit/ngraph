@@ -33,6 +33,7 @@ namespace ngraph
         class Backend;
         class Executor;
         using Handle = std::unique_ptr<Executor>;
+        using SharedHandle = std::shared_ptr<Executor>;
     }
 }
 
